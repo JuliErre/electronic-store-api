@@ -36,18 +36,29 @@ export class ProductsService {
   }
 
   async findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+    const products = await this.productModel.find().exec();
+    const productsFormatted = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      stock: product.stock,
+    }));
+    return productsFormatted;
   }
 
   findOne(id: number) {
     return this.products.find((p) => p.id === id);
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    this.products = this.products.map((p) =>
-      p.id === id ? { ...p, ...updateProductDto } : p,
-    );
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.productModel.findById(id).exec();
+  }
+
+  async updateProductStock(id: string, quantity: number) {
+    const product = await this.productModel.findById(id).exec();
+    product.stock = product.stock - quantity;
+    return product.save();
   }
 
   remove(id: number) {

@@ -13,6 +13,9 @@ class LinkItems {
 
   @IsNumber()
   quantity: number;
+
+  @IsString()
+  imageUrl: string;
 }
 
 export class CreateLinkDto {

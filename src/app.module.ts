@@ -11,6 +11,7 @@ import { UserModule } from './user/user.module';
 import { UsersModule } from './users/users.module';
 import { PaymentsModule } from './payments/payments.module';
 import { OrdersModule } from './orders/orders.module';
+import { EmailService } from './services/email/email.service';
 
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy) {
@@ -48,6 +49,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     OrdersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EmailService],
 })
 export class AppModule {}

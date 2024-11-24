@@ -36,7 +36,7 @@ export class ProductsService {
     return this.products;
   }
   async findAll(query: ProductQueryDto) {
-    const { page, limit, sortBy, order, category } = query;
+    const { page, limit, sortBy, order, category, search } = query;
 
     const filter: any = {};
     if (category) {
@@ -44,6 +44,13 @@ export class ProductsService {
         throw new BadRequestException('Formato de ID de categoría inválido');
       }
       filter.categories = { $in: [category] };
+    }
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } }, // Búsqueda por nombre
+        { description: { $regex: search, $options: 'i' } }, // Búsqueda por descripción
+      ];
     }
 
     const sortOrder = order === 'DESC' ? -1 : 1;

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ProductQueryDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product as ProductEntity } from './entities/product.entity';
 import { Product, ProductDocument } from './schemas/product.schema';
@@ -34,17 +35,53 @@ export class ProductsService {
     });
     return this.products;
   }
+  async findAll(query: ProductQueryDto) {
+    const { page, limit, sortBy, order, category, search } = query;
 
-  async findAll(): Promise<Product[]> {
-    const products = await this.productModel.find().exec();
-    const productsFormatted = products.map((product) => ({
+    const filter: any = {};
+    if (category) {
+      if (!Types.ObjectId.isValid(category)) {
+        throw new BadRequestException('Formato de ID de categoría inválido');
+      }
+      filter.categories = { $in: [category] };
+    }
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } }, // Búsqueda por nombre
+        { description: { $regex: search, $options: 'i' } }, // Búsqueda por descripción
+      ];
+    }
+
+    const sortOrder = order === 'DESC' ? -1 : 1;
+    const skip = (page - 1) * limit;
+
+    const items = await this.productModel
+      .find(filter)
+      .sort({ [sortBy]: sortOrder })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const itemsFormatted = items.map((product) => ({
       id: product.id,
       name: product.name,
       image: product.image,
       price: product.price,
       stock: product.stock,
+      categories: product.categories,
     }));
-    return productsFormatted;
+
+    const total = await this.productModel.countDocuments(filter).exec();
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: itemsFormatted,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   findOne(id: number) {

@@ -84,8 +84,18 @@ export class ProductsService {
     };
   }
 
-  findOne(id: number) {
-    return this.products.find((p) => p.id === id);
+  async findOne(id: string) {
+    const product = await this.productModel.findById(id).exec();
+    const formatedProduct = {
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      categories: product.categories,
+    };
+    return formatedProduct;
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {

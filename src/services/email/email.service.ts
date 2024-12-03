@@ -6,7 +6,12 @@ export class EmailService {
   private resend: Resend;
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_KEY);
+    const resendKey = process.env.RESEND_KEY;
+    if (!resendKey) {
+      console.error('RESEND_KEY environment variable is not set');
+      throw new Error('RESEND_KEY environment variable is not set');
+    }
+    this.resend = new Resend(resendKey);
   }
 
   async sendEmail(email: string, subject: string, html: string) {

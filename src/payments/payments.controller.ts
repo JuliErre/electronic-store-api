@@ -6,7 +6,9 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateLinkDto } from './dto/create-link.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -16,10 +18,12 @@ import { PaymentsService } from './payments.service';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createLinkDto: CreateLinkDto) {
     return this.paymentsService.create(createLinkDto);
   }
+
   @Post('/create-payment')
   createPayment(@Body() createPaymentDto: CreatePaymentDto) {
     return this.paymentsService.createPayment(createPaymentDto);
